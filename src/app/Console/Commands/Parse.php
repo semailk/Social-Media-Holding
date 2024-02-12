@@ -5,9 +5,9 @@ namespace App\Console\Commands;
 use App\Services\Parse\Product\ProductParseService;
 use Illuminate\Console\Command;
 
-class ParseProduct extends Command
+class Parse extends Command
 {
-    protected $signature = 'parse-product {model} {searchName?}';
+    protected $signature = 'parse {model} {searchName?}';
 
     protected $description = 'Command description';
 

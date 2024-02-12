@@ -37,7 +37,7 @@ class ProductParseService implements ProductParseServiceInterface
         foreach ($contents as $content) {
             switch ($this->model) {
                 case 'products':
-                    $this->productSave($content);
+                    $this->productSave($content, $productName);
                     break;
                 case 'posts':
                     $this->postSave($content);
@@ -86,7 +86,7 @@ class ProductParseService implements ProductParseServiceInterface
             [Category::NAME => $product['category']]
         );
 
-        if ($brand && $category && Str::contains($product['title'], $productName)) {
+        if (Str::contains($product['title'], $productName)) {
             $productDto = new ProductDto(
                 $product['title'],
                 $product['description'],
