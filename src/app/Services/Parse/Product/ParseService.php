@@ -6,26 +6,21 @@ use App\DTO\Parse\Post\PostDto;
 use App\DTO\Parse\Product\ProductDto;
 use App\Models\Brand;
 use App\Models\Category;
-use App\Models\Post;
-use App\Models\Product;
 use App\Models\User;
+use App\Repositories\Post\Contract\PostRepository;
+use App\Repositories\Product\Contract\ProductRepository;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 
-class ProductParseService implements ProductParseServiceInterface
+class ParseService implements ProductParseServiceInterface
 {
-    private string $url;
+    private string $url = 'https://dummyjson.com/';
     private string $model;
+
     public function __construct(string $model)
     {
-        $this->url = match ($model) {
-            'users' => 'https://dummyjson.com/products',
-            'posts' => 'https://dummyjson.com/posts',
-            'products' => 'https://dummyjson.com/products',
-            'recipes' => 'https://dummyjson.com/recipes'
-        };
-
+        $this->url = $this->url . $model;
         $this->model = $model;
     }
 
@@ -42,6 +37,9 @@ class ProductParseService implements ProductParseServiceInterface
                 case 'posts':
                     $this->postSave($content);
                     break;
+                default:
+                    echo 'Other parsers are not ready yet';
+                    exit();
             }
         }
     }
@@ -63,13 +61,8 @@ class ProductParseService implements ProductParseServiceInterface
             $post['title']
         );
 
-        Post::query()->create([
-            Post::TAGS => $postDTO->getTags(),
-            Post::USER => $user->id,
-            Post::BODY => $postDTO->getBody(),
-            Post::TITLE => $postDTO->getTitle(),
-            Post::REACTIONS => $postDTO->getReaction()
-        ]);
+        $postRepository = new PostRepository();
+        $postRepository->create($postDTO);
     }
 
     private function productSave(array $product, ?string $productName = null): void
@@ -86,7 +79,7 @@ class ProductParseService implements ProductParseServiceInterface
             [Category::NAME => $product['category']]
         );
 
-        if (Str::contains($product['title'], $productName)) {
+        if (Str::contains($product['title'], $productName) || !$productName) {
             $productDto = new ProductDto(
                 $product['title'],
                 $product['description'],
@@ -100,18 +93,8 @@ class ProductParseService implements ProductParseServiceInterface
                 $product['price']
             );
 
-            Product::query()->create([
-                Product::RATING => $productDto->getRating(),
-                Product::IMAGES => $productDto->getImages(),
-                Product::PRICE => $productDto->getPrice(),
-                Product::THUMBNAIL => $productDto->getThumbnail(),
-                Product::DISCOUNT_PERCENTAGE => $productDto->getDiscountPercentage(),
-                Product::STOCK => $productDto->getStock(),
-                Product::CATEGORY => $productDto->getCategory()->id,
-                Product::BRAND => $productDto->getBrand()->id,
-                Product::DESCRIPTION => $productDto->getDescription(),
-                Product::TITLE => $productDto->getTitle()
-            ]);
+            $productRepository = new ProductRepository();
+            $productRepository->create($productDto);
         }
     }
 

@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Services\Parse\Product\ProductParseService;
+use App\Services\Parse\Product\ParseService;
 use Illuminate\Console\Command;
 
 class Parse extends Command
@@ -30,7 +30,7 @@ class Parse extends Command
             return Command::FAILURE;
         }
 
-        $productParseService = new ProductParseService($model);
+        $productParseService = new ParseService($model);
         $productParseService->build($searchName);
         $this->info('SUCCESS!:)');
 
